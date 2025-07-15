@@ -2,42 +2,42 @@ require('dotenv').config();
 const { Pool } = require('pg');
 const constants = require('constants');
 
-// Parse DATABASE_URL if it exists (provided by Fly.io)
+
 const getDbConfigFromUrl = () => {
   const dbUrl = process.env.DATABASE_URL;
-  
+
   if (!dbUrl) {
     console.log('No DATABASE_URL environment variable found');
     return null;
   }
-  
+
   console.log('Found DATABASE_URL, attempting to parse...');
-  
-  // Parse the URL to extract connection details
+
+
   try {
     const url = new URL(dbUrl);
-    
-    // Handle auth - might be undefined in some connection strings
+
+
     let user = '';
     let password = '';
-    
+
     if (url.username) {
       user = decodeURIComponent(url.username);
     }
-    
+
     if (url.password) {
       password = decodeURIComponent(url.password);
     }
-    
-    // Extract database name from pathname (remove leading slash)
+
+
     const database = url.pathname ? url.pathname.substring(1) : 'postgres';
-    
-    // Check if SSL should be disabled based on URL parameters
+
+
     const sslMode = url.searchParams.get('sslmode');
     const sslEnabled = sslMode !== 'disable';
-    
+
     console.log(`SSL mode from URL: ${sslMode}, SSL will be ${sslEnabled ? 'enabled' : 'disabled'}`);
-    
+
     const config = {
       user,
       password,
@@ -45,8 +45,8 @@ const getDbConfigFromUrl = () => {
       port: url.port || 5432,
       database
     };
-    
-    // Only add SSL configuration if not explicitly disabled
+
+
     if (sslEnabled) {
       config.ssl = {
         rejectUnauthorized: false,
@@ -55,10 +55,10 @@ const getDbConfigFromUrl = () => {
       };
       console.log('SSL is enabled for this connection');
     } else {
-      // Do not add SSL configuration when sslmode=disable
+
       console.log('SSL is disabled for this connection');
     }
-    
+
     console.log(`Successfully parsed DATABASE_URL. Connecting to ${config.host}:${config.port}/${config.database}`);
     return config;
   } catch (error) {
@@ -67,7 +67,7 @@ const getDbConfigFromUrl = () => {
   }
 };
 
-// Get config from DATABASE_URL or fall back to individual env vars
+
 const dbConfig = getDbConfigFromUrl() || {
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
@@ -76,10 +76,10 @@ const dbConfig = getDbConfigFromUrl() || {
   database: process.env.DB_NAME
 };
 
-// Create a connection pool
+
 const pool = new Pool(dbConfig);
 
-// Test database connection
+
 pool.connect()
   .then(() => console.log('Connected to PostgreSQL database'))
   .catch(err => console.error('Database connection error:', err));

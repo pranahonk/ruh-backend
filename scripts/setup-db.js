@@ -1,18 +1,18 @@
 const { Client } = require('pg');
 require('dotenv').config();
 
-// Parse DATABASE_URL if it exists (provided by Fly.io)
+
 function getDbConfigFromUrl() {
   const dbUrl = process.env.DATABASE_URL;
-  
+
   if (!dbUrl) {
     return null;
   }
-  
+
   try {
     const url = new URL(dbUrl);
     const [username, password] = url.auth.split(':');
-    
+
     return {
       user: username,
       password: password,
@@ -36,11 +36,11 @@ async function createDatabase() {
     password: process.env.DB_PASSWORD,
     database: 'postgres' // Connect to default database
   };
-  
+
   // If we're using DATABASE_URL, we don't need to create a database
   // as Fly.io has already created it for us
   const usingFlyDb = !!process.env.DATABASE_URL;
-  
+
   // Connect to PostgreSQL
   const client = new Client(dbConfig);
 

@@ -1,6 +1,6 @@
 const https = require('https');
 
-// Configuration
+
 const API_KEY = '0d9ed8dbdc56012aa1b9161dc997a350'; // The API key we just set
 const BASE_URL = 'wellness-platform-api.fly.dev'; // Your Fly.io domain
 
@@ -78,7 +78,7 @@ async function runTests() {
     await testRootEndpoint();
     await testGetClients();
     await testGetAppointments();
-    
+
     console.log('\nAll tests completed!');
   } catch (error) {
     console.error('Test suite failed:', error);

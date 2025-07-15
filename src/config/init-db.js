@@ -2,7 +2,7 @@ const db = require('./db');
 
 async function initializeDatabase() {
   try {
-    // Create clients table
+
     await db.query(`
       CREATE TABLE IF NOT EXISTS clients (
         id VARCHAR(50) PRIMARY KEY,
@@ -14,8 +14,8 @@ async function initializeDatabase() {
         synced BOOLEAN DEFAULT FALSE
       );
     `);
-    
-    // Create appointments table
+
+
     await db.query(`
       CREATE TABLE IF NOT EXISTS appointments (
         id VARCHAR(50) PRIMARY KEY,
@@ -27,8 +27,8 @@ async function initializeDatabase() {
         FOREIGN KEY (client_id) REFERENCES clients(id)
       );
     `);
-    
-    // Create sync_logs table to track synchronization
+
+
     await db.query(`
       CREATE TABLE IF NOT EXISTS sync_logs (
         id SERIAL PRIMARY KEY,
@@ -40,7 +40,7 @@ async function initializeDatabase() {
         message TEXT
       );
     `);
-    
+
     console.log('Database tables initialized successfully');
   } catch (error) {
     console.error('Error initializing database tables:', error);

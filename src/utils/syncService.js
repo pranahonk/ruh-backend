@@ -3,17 +3,17 @@ const Appointment = require('../models/appointment');
 const db = require('../config/db');
 const cron = require('node-cron');
 
-// Mock API client
+
 class MockApiClient {
   constructor(apiKey) {
     this.apiKey = apiKey;
     this.baseUrl = 'https://mock.api';
   }
 
-  // Simulate API calls
+
   async fetchClients() {
     console.log('Fetching clients from external API...');
-    // Simulate API response
+
     return [
       { id: '1', name: 'John Doe', email: 'john@example.com', phone: '1234567890' },
       { id: '2', name: 'Jane Smith', email: 'jane@example.com', phone: '9876543210' }
@@ -22,7 +22,7 @@ class MockApiClient {
 
   async fetchAppointments() {
     console.log('Fetching appointments from external API...');
-    // Simulate API response
+
     return [
       { id: 'a1', client_id: '1', time: '2025-07-10T10:00:00Z' },
       { id: 'a2', client_id: '2', time: '2025-07-11T11:00:00Z' }
@@ -31,7 +31,7 @@ class MockApiClient {
 
   async createAppointment(appointmentData) {
     console.log('Creating appointment in external API...', appointmentData);
-    // Simulate API response
+
     return {
       id: `a${Math.floor(Math.random() * 1000)}`,
       client_id: appointmentData.client_id,
@@ -46,7 +46,7 @@ class SyncService {
     this.isSyncing = false;
   }
 
-  // Log sync operations
+
   async logSync(entityType, operation, entityId, success, message = '') {
     try {
       await db.query(
@@ -58,76 +58,76 @@ class SyncService {
     }
   }
 
-  // Pull clients from external API and store in local DB
+
   async syncClientsFromApi() {
     try {
       const clients = await this.apiClient.fetchClients();
       const syncedClients = [];
-      
+
       for (const client of clients) {
         try {
-          // Check if client already exists by ID
+
           const existingClientById = await Client.getById(client.id);
-          
+
           if (existingClientById) {
-            // Update client if needed
+
             await Client.update(client.id, client);
             console.log(`Updated existing client with ID: ${client.id}`);
           } else {
-            // Check if a client with the same email exists
+
             const result = await db.query('SELECT * FROM clients WHERE email = $1', [client.email]);
             const existingClientByEmail = result.rows[0];
-            
+
             if (existingClientByEmail) {
               console.log(`Client with email ${client.email} already exists with ID: ${existingClientByEmail.id}`);
-              // We could update the existing client here if needed
+
             } else {
-              // Create new client
+
               await Client.create(client);
               console.log(`Created new client with ID: ${client.id}`);
             }
           }
-          
-          // Mark as synced
+
+
           await Client.markAsSynced(client.id);
           await this.logSync('client', 'pull', client.id, true);
           syncedClients.push(client);
         } catch (clientError) {
           console.error(`Error processing client ${client.id}:`, clientError);
           await this.logSync('client', 'pull', client.id, false, clientError.message);
-          // Continue with next client instead of failing the entire batch
+
         }
       }
-      
+
       console.log(`Successfully synced ${syncedClients.length} out of ${clients.length} clients from API`);
       return syncedClients;
     } catch (error) {
       console.error('Error syncing clients from API:', error);
       await this.logSync('client', 'pull', 'batch', false, error.message);
-      // Return empty array instead of throwing to allow the sync process to continue
+
       return [];
     }
   }
 
-  // Pull appointments from external API and store in local DB
+
   async syncAppointmentsFromApi() {
     try {
       const appointments = await this.apiClient.fetchAppointments();
       const syncedAppointments = [];
-      
+
       for (const appointment of appointments) {
         try {
-          // Check if client exists first (to avoid foreign key constraint error)
+
           const client = await Client.getById(appointment.client_id);
           if (!client) {
             console.log(`Skipping appointment ${appointment.id} - client ${appointment.client_id} does not exist`);
             await this.logSync('appointment', 'pull', appointment.id, false, `Client ${appointment.client_id} not found`);
             continue;
           }
-          
-          // Check if appointment already exists
+
+
           const existingAppointment = await Appointment.getById(appointment.id);
-          
+
           if (existingAppointment) {
             // Update appointment if needed
             await Appointment.update(appointment.id, appointment);
@@ -137,7 +137,7 @@ class SyncService {
             await Appointment.create(appointment);
             console.log(`Created new appointment with ID: ${appointment.id}`);
           }
-          
+
           // Mark as synced
           await Appointment.markAsSynced(appointment.id);
           await this.logSync('appointment', 'pull', appointment.id, true);
@@ -148,7 +148,7 @@ class SyncService {
           // Continue with next appointment instead of failing the entire batch
         }
       }
-      
+
       console.log(`Successfully synced ${syncedAppointments.length} out of ${appointments.length} appointments from API`);
       return syncedAppointments;
     } catch (error) {
@@ -163,12 +163,12 @@ class SyncService {
   async pushUnsyncedClients() {
     try {
       const unsyncedClients = await Client.getUnsynced();
-      
+
       for (const client of unsyncedClients) {
         try {
           // Simulate API call to update client
           console.log(`Pushing client ${client.id} to API`);
-          
+
           // Mark as synced
           await Client.markAsSynced(client.id);
           await this.logSync('client', 'push', client.id, true);
@@ -177,7 +177,7 @@ class SyncService {
           await this.logSync('client', 'push', client.id, false, error.message);
         }
       }
-      
+
       console.log(`Pushed ${unsyncedClients.length} clients to API`);
       return unsyncedClients;
     } catch (error) {
@@ -190,12 +190,12 @@ class SyncService {
   async pushUnsyncedAppointments() {
     try {
       const unsyncedAppointments = await Appointment.getUnsynced();
-      
+
       for (const appointment of unsyncedAppointments) {
         try {
           // Simulate API call to update appointment
           console.log(`Pushing appointment ${appointment.id} to API`);
-          
+
           // Mark as synced
           await Appointment.markAsSynced(appointment.id);
           await this.logSync('appointment', 'push', appointment.id, true);
@@ -204,7 +204,7 @@ class SyncService {
           await this.logSync('appointment', 'push', appointment.id, false, error.message);
         }
       }
-      
+
       console.log(`Pushed ${unsyncedAppointments.length} appointments to API`);
       return unsyncedAppointments;
     } catch (error) {
@@ -219,26 +219,26 @@ class SyncService {
       console.log('Sync already in progress, skipping...');
       return;
     }
-    
+
     this.isSyncing = true;
     console.log('Starting full sync process...');
-    
+
     try {
       // Pull data from API - clients first, then appointments
       // This ensures clients exist before we try to create appointments
       const clients = await this.syncClientsFromApi();
       console.log('Clients sync completed, now syncing appointments');
-      
+
       // Add a small delay to ensure all client operations are complete
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       // Now sync appointments
       await this.syncAppointmentsFromApi();
-      
+
       // Push unsynced data to API
       await this.pushUnsyncedClients();
       await this.pushUnsyncedAppointments();
-      
+
       console.log('Full sync completed successfully');
     } catch (error) {
       console.error('Error during full sync:', error);
