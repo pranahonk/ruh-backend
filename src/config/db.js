@@ -1,27 +1,66 @@
 require('dotenv').config();
 const { Pool } = require('pg');
+const constants = require('constants');
 
 // Parse DATABASE_URL if it exists (provided by Fly.io)
 const getDbConfigFromUrl = () => {
   const dbUrl = process.env.DATABASE_URL;
   
   if (!dbUrl) {
+    console.log('No DATABASE_URL environment variable found');
     return null;
   }
+  
+  console.log('Found DATABASE_URL, attempting to parse...');
   
   // Parse the URL to extract connection details
   try {
     const url = new URL(dbUrl);
-    const [username, password] = url.auth.split(':');
     
-    return {
-      user: username,
-      password: password,
+    // Handle auth - might be undefined in some connection strings
+    let user = '';
+    let password = '';
+    
+    if (url.username) {
+      user = decodeURIComponent(url.username);
+    }
+    
+    if (url.password) {
+      password = decodeURIComponent(url.password);
+    }
+    
+    // Extract database name from pathname (remove leading slash)
+    const database = url.pathname ? url.pathname.substring(1) : 'postgres';
+    
+    // Check if SSL should be disabled based on URL parameters
+    const sslMode = url.searchParams.get('sslmode');
+    const sslEnabled = sslMode !== 'disable';
+    
+    console.log(`SSL mode from URL: ${sslMode}, SSL will be ${sslEnabled ? 'enabled' : 'disabled'}`);
+    
+    const config = {
+      user,
+      password,
       host: url.hostname,
       port: url.port || 5432,
-      database: url.pathname.substring(1),
-      ssl: url.searchParams.get('sslmode') === 'require' ? { rejectUnauthorized: false } : false
+      database
     };
+    
+    // Only add SSL configuration if not explicitly disabled
+    if (sslEnabled) {
+      config.ssl = {
+        rejectUnauthorized: false,
+        requestCert: true,
+        secureOptions: constants.SSL_OP_NO_TLSv1_2
+      };
+      console.log('SSL is enabled for this connection');
+    } else {
+      // Do not add SSL configuration when sslmode=disable
+      console.log('SSL is disabled for this connection');
+    }
+    
+    console.log(`Successfully parsed DATABASE_URL. Connecting to ${config.host}:${config.port}/${config.database}`);
+    return config;
   } catch (error) {
     console.error('Error parsing DATABASE_URL:', error);
     return null;

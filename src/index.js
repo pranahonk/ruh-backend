@@ -44,8 +44,9 @@ app.get('/', (req, res) => {
 // Initialize database and start server
 async function startServer() {
   // Start the server first to ensure health checks pass
-  const server = app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+  // Listen on all network interfaces (0.0.0.0) for Fly.io compatibility
+  const server = app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on 0.0.0.0:${PORT}`);
   });
   
   // Initialize database and sync service in the background
