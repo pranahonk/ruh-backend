@@ -1,0 +1,42 @@
+services:
+  # Web Service for the API
+  - type: web
+    name: wellness-platform-api
+    runtime: node
+    buildCommand: ./scripts/render-build.sh
+    startCommand: npm run start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: API_KEY
+        fromDatabase:
+          name: wellness-db
+          property: api_key
+      - key: DB_HOST
+        fromDatabase:
+          name: wellness-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: wellness-db
+          property: port
+      - key: DB_USER
+        fromDatabase:
+          name: wellness-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: wellness-db
+          property: password
+      - key: DB_NAME
+        fromDatabase:
+          name: wellness-db
+          property: database
+
+databases:
+  # PostgreSQL Database
+  - name: wellness-db
+    plan: standard
