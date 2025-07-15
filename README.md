@@ -1,4 +1,4 @@
-# Wellness Platform API
+# Ruh Platform API
 
 ## Overview
 
@@ -732,4 +732,4 @@ ISC
 
 ---
 
-© 2025 Wellness Platform API. All rights reserved.
+© 2025 Ruh Platform API. All rights reserved.
