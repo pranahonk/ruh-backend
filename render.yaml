@@ -37,4 +37,4 @@ services:
 databases:
   # PostgreSQL Database
   - name: wellness-db
-    plan: standard
+    plan: free
