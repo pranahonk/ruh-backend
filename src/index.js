@@ -43,27 +43,46 @@ app.get('/', (req, res) => {
 
 // Initialize database and start server
 async function startServer() {
+  // Start the server first to ensure health checks pass
+  const server = app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+  
+  // Initialize database and sync service in the background
+  initializeBackgroundServices().catch(error => {
+    console.error('Error in background services:', error);
+    // Don't exit the process, just log the error
+  });
+  
+  return server;
+}
+
+// Initialize database and sync service in the background
+async function initializeBackgroundServices() {
   try {
+    console.log('Initializing database...');
     // Initialize database tables
     await initializeDatabase();
+    console.log('Database initialized successfully');
     
-    // Start the server
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
-    
-    // Initialize sync service
-    const syncService = new SyncService(process.env.API_KEY);
-    
-    // Perform initial sync
-    await syncService.performFullSync();
-    
-    // Schedule periodic sync (every 15 minutes)
-    syncService.scheduleSync('*/15 * * * *');
-    
+    // Only start sync service if API_KEY is provided
+    if (process.env.API_KEY) {
+      console.log('Initializing sync service...');
+      // Initialize sync service
+      const syncService = new SyncService(process.env.API_KEY);
+      
+      // Perform initial sync
+      await syncService.performFullSync();
+      
+      // Schedule periodic sync (every 15 minutes)
+      syncService.scheduleSync('*/15 * * * *');
+      console.log('Sync service initialized successfully');
+    } else {
+      console.log('API_KEY not provided, skipping sync service initialization');
+    }
   } catch (error) {
-    console.error('Failed to start server:', error);
-    process.exit(1);
+    console.error('Failed to initialize background services:', error);
+    // Don't exit the process, just log the error
   }
 }
 

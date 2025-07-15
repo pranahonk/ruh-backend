@@ -1,3 +1,4 @@
+// Special configuration for Fly.io deployment
 require('dotenv').config();
 const { Pool } = require('pg');
 
@@ -37,14 +38,10 @@ const dbConfig = getDbConfigFromUrl() || {
   database: process.env.DB_NAME
 };
 
-// Create a connection pool
+// Create a new pool using the configuration
 const pool = new Pool(dbConfig);
 
-// Test database connection
-pool.connect()
-  .then(() => console.log('Connected to PostgreSQL database'))
-  .catch(err => console.error('Database connection error:', err));
-
+// Export the query method and the pool
 module.exports = {
   query: (text, params) => pool.query(text, params),
   pool
