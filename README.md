@@ -1,35 +1,19 @@
-# Ruh Platform API
+# 🏛️ Archived Repository
 
-## Overview
+> **Note**
+> This repository has been archived and is no longer maintained. It was created solely for company testing purposes and is no longer in active development.
 
-A comprehensive Node.js backend API wrapper for client and appointment management with PostgreSQL storage and periodic synchronization with an external API. This system provides a robust foundation for managing wellness appointments, client data, and ensures data consistency through automated synchronization processes.
+## Project Overview
+This was a backend API implementation for a wellness platform, used for internal company testing. The application is no longer maintained.
 
-## Table of Contents
+## Status
+🔒 **Archived** - This repository is read-only and no longer accepting updates or contributions.
 
-- [Features](#features)
-- [Project Structure](#project-structure)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Running the Application](#running-the-application)
-- [API Documentation](#api-documentation)
-- [Authentication](#authentication)
-- [Data Synchronization](#data-synchronization)
-- [Database Schema](#database-schema)
-- [Error Handling](#error-handling)
-- [Testing](#testing)
-- [Deployment](#deployment)
-- [Troubleshooting](#troubleshooting)
-
-## Features
-
-- **RESTful API**: Comprehensive endpoints for managing clients and appointments
-- **PostgreSQL Integration**: Robust data storage with proper schema design
-- **API Key Authentication**: Secure access to all endpoints
-- **Periodic Synchronization**: Automated sync with external API every 15 minutes
-- **Comprehensive Error Handling**: Resilient operation with detailed error logging
-- **Sync Logging**: Detailed logs of all sync operations for auditing and debugging
-- **Idempotent Operations**: Safe retry mechanisms for API operations
+## Technology Stack
+- Node.js
+- PostgreSQL
+- Express
+- RESTful API
 
 ## Project Structure
 
